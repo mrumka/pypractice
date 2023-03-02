@@ -9,13 +9,12 @@ STEP_M = 0.65  # Длина шага в метрах.
 
 storage_data = {}  # Словарь для хранения полученных данных.
 
-
 def check_correct_data(data):
     """Проверка корректности полученного пакета."""
     # Если длина пакета отлична от 2
     # или один из элементов пакета имеет пустое значение -
     # функция вернет False, иначе - True.
-    if len(data) !=2 or None in data:
+    if len(data) != 2 or None in data:
         return False
     return True
 
@@ -26,9 +25,9 @@ def check_correct_time(time):
     # меньше или равно самому большому значению ключа в словаре,
     # функция вернет False.
     # Иначе - True
-    if storage_data and time <= max (storage_data):
-        return False
-    return True
+    if len(storage_data) == 0 or time > max(storage_data):
+        return True
+    return False
 
 
 def get_step_day(steps):
@@ -37,10 +36,10 @@ def get_step_day(steps):
     # прибавьте к ним значение из последнего пакета
     # и верните  эту сумму.
 
-    steps = 0
+    total = steps
     for i in storage_data:
-        steps += storage_data[i]
-    return int(steps)
+        total += storage_data[i]
+    return int(total)
 
 
 def get_distance(steps):
@@ -58,7 +57,7 @@ def get_spent_calories(dist, current_time):
     # Для расчётов вам потребуется значение времени;
     # получите его из объекта current_time;
     # переведите часы и минуты в часы, в значение типа float.
-    time = float(current_time.minute / 60 + current_time.hour)
+    time = float(current_time.minute) / 60 + current_time.hour
     spent_calories = (K_1 * WEIGHT + ((dist / time) ** 2 / HEIGHT) * K_2 * WEIGHT) * time * 60
     return spent_calories
 
@@ -93,13 +92,16 @@ def accept_package(data):
     """Обработать пакет данных."""
     if check_correct_data(data) == False:
         return 'Некорректный пакет'
-    storage_data[data[0]] = data[1]  # Распакуйте полученные данные.
+
+    pack_steps = int(data[1])  # Распакуйте полученные данные.
     pack_time = dt.datetime.strptime(data[0], FORMAT).time() # Преобразуйте строку с временем в объект типа time.
 
-    if check_correct_time(data[0]) == False:  # Если функция проверки значения времени вернет False
+    if check_correct_time(pack_time) == False:  # Если функция проверки значения времени вернет False
         return 'Некорректное значение времени'
-    else:
-        day_steps = get_step_day(int(data[1]))  # Запишите результат подсчёта пройденных шагов.
+
+    storage_data[pack_time] = pack_steps
+
+    day_steps = get_step_day(pack_steps)  # Запишите результат подсчёта пройденных шагов.
     dist = get_distance(day_steps)  # Запишите результат расчёта пройденной дистанции.
     spent_calories = get_spent_calories(dist, pack_time)  # Запишите результат расчёта сожжённых калорий.
     achievement = get_achievement(dist)  # Запишите выбранное мотивирующее сообщение.
@@ -120,3 +122,4 @@ accept_package(package_1)
 accept_package(package_2)
 accept_package(package_3)
 accept_package(package_4)
+
